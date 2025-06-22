@@ -1,4 +1,4 @@
-# Diet Planner Web App
+# Dietura - The Diet Planner Web App
 
 A web-based diet planner designed to help users track their meals, monitor their nutrition intake, and achieve their fitness goals. Users can plan their meals for the week, track their daily calorie and protein intake, and visualize progress through easy-to-use dashboards.
 
