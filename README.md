@@ -3,57 +3,85 @@
 A web-based diet planner designed to help users track their meals, monitor their nutrition intake, and achieve their fitness goals. Users can plan their meals for the week, track their daily calorie and protein intake, and visualize progress through easy-to-use dashboards.
 
 ## Features
-
-### 1. **Dashboard**
-- Displays daily nutrition goals, progress bars, and summary of calories and protein intake for the day.
-- Allows users to track their progress against long-term goals like weight loss or muscle gain.
-- Visualizes consumed meals and nutrient intake throughout the day.
-
-### 2. **Meal Planner**
-- Allows users to plan their meals for the week.
-- Users can select meals, adjust portions, and set daily calorie and protein goals.
-- Displays planned meals for each day and helps users stick to their diet plan.
-
-### 3. **Nutrition Tracker**
-- Users can log their meals each day and track their nutritional intake (calories, protein, fats, etc.).
-- Provides real-time updates on consumed nutrients and compares them with the user's goals.
-- Offers detailed food data sourced from reliable APIs.
-
-### 4. **Recipe Library**
-- Provides a library of recipes that users can browse through.
-- Each recipe includes detailed nutritional information for each ingredient.
-
----
+- **Dashboard:** See your daily nutrition goals, progress, and meal summary at a glance.
+- **Meal Planner:** Plan your meals for the week and set daily calorie/protein targets.
+- **Nutrition Tracker:** Log meals, track calories and macros, and get instant feedback using real food data from trusted APIs.
 
 ## Tech Stack
-
-### Frontend:
-- **React**: A JavaScript library for building the user interface.
-- **Material UI**: A popular React component library for building modern, responsive UI components.
-- **HTML/CSS**: For web structure and styling.
-
-### Backend:
-- **Node.js**: JavaScript runtime for the backend server.
-- **Express.js**: Web framework for Node.js for handling API requests.
-
-### Database:
-- **MongoDB**: NoSQL database to store user data, meal plans, logs, and recipes.
-
-### APIs:
-1. **Open Food Facts API**
-   - Provides food data, including nutritional information for various foods.
-   - Helps track calories, protein, and other nutrients for user meals.
-   - Completely open-source and free to use.
-
-   [Open Food Facts API Documentation](https://world.openfoodfacts.org/data)
-
-2. **FoodData Central (USDA) API**
-   - Provides detailed nutritional data for thousands of food items.
-   - Supports tracking of calories, macronutrients, and micronutrients.
-   - Free access for public use.
-
-   [FoodData Central API Documentation](https://fdc.nal.usda.gov/api-key-signup.html)
+- **Frontend:** React (Vite), React Router, Supabase JS, HTML/CSS
+- **Backend:** Node.js, Express, Supabase JS
+- **Database & Auth:** Supabase
+- **APIs:** Open Food Facts, USDA FoodData Central
 
 ---
+
+## Project Structure
+
+```
+Diet-Planner/
+├── backend/           # Node.js/Express API and Supabase integration
+│   ├── middleware/
+│   ├── routes/
+│   ├── index.js
+│   └── ...
+├── frontend/          # React app (Vite)
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   ├── pages/
+│   │   └── services/
+│   ├── App.jsx
+│   ├── index.html
+│   └── ...
+├── .gitignore
+├── README.md
+└── ...
+```
+- `backend/` contains all server-side code and API routes.
+- `frontend/` contains all client-side code and UI components.
+
+---
+
+## Quick Start
+
+1. **Clone the repo**  
+   `git clone https://github.com/your-username/Diet-Planner.git`
+
+2. **Backend**
+   ```
+   cd backend
+   npm install
+   npm start
+   ```
+
+3. **Frontend**
+   ```
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+4. Open your browser at [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal).
+
+---
+
+## Contributing
+
+To get started:
+
+1. Fork this repository.
+2. Clone your fork:  
+   `git clone https://github.com/your-username/Diet-Planner.git`
+3. Create a new branch for your feature or bugfix:  
+   `git checkout -b my-feature`
+4. Make your changes and commit them:  
+   `git commit -m "Add my feature"`
+5. Push to your fork:  
+   `git push origin my-feature`
+6. Open a Pull Request describing your changes.
+
+
+
 
 
