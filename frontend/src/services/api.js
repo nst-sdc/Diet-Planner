@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050/api';
+// Use relative path to leverage Vite proxy, or fallback to env var if set
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Helper to get auth token
 const getAuthToken = () => {

@@ -1,10 +1,11 @@
 // This is your Prisma schema file
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -67,7 +68,7 @@ model LoggedMeal {
   fat          Float
   quantity     Float    @default(100) // Current serving size in grams
   baseQuantity Float    @default(100) @map("base_quantity") // Original reference serving size
-  mealDate     DateTime @map("meal_date") @db.Date
+  mealDate     DateTime @map("meal_date")
   loggedAt     DateTime @default(now()) @map("logged_at")
   
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -100,7 +101,7 @@ model PlannedMeal {
   protein      Float?
   carbs        Float?
   fat          Float?
-  plannedDate  DateTime @map("planned_date") @db.Date
+  plannedDate  DateTime @map("planned_date")
   mealType     String   @map("meal_type")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")

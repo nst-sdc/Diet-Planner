@@ -1,2 +1,0 @@
-Backend .env path: backend/.env
-Frontend .env path: frontend/.env 

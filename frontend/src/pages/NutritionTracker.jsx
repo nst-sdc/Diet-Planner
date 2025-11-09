@@ -239,7 +239,8 @@ function NutritionTracker({ user }) {
   return (
     <div>
       <Navigation user={user} onLogout={handleLogout} />
-      <div style={{ marginTop: '2rem' }}>
+      <div className="main-content">
+        <div style={{ marginTop: '2rem' }}>
         <h1>Nutrition Tracker</h1>
         <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
           Track your daily nutrition intake
@@ -571,6 +572,7 @@ function NutritionTracker({ user }) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   )

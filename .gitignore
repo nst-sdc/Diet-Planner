@@ -2,4 +2,9 @@
 frontend/.env
 backend/.env
 .DS_Store
-node_modules/ 
+node_modules/
+package-lock.json
+**/package-lock.json
+backend/prisma/dev.db
+*.db
+*.db-journal 

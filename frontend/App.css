@@ -1,19 +1,27 @@
-body, html, #root {
-  min-height: 100vh;
+html, body, #root {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
   background: #f5fff1;
+  overflow-x: hidden;
 }
 
 .App {
   min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   background: #f5fff1;
+  overflow-x: hidden;
 }
 
 .navbar, .footer, .features, .hero {
   margin: 0;
   padding-left: 0;
   padding-right: 0;
+  width: 100%;
 }
 
 .hero, .features, .footer {
@@ -64,6 +72,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Navigation - always visible, clear background, visible logout */
@@ -329,6 +338,10 @@ body {
   background-color: #fcfff9;
   color: #1d1d1d;
   line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* 🌿 TOPBAR */
@@ -350,6 +363,9 @@ body {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -419,6 +435,13 @@ body {
   padding: 3rem 2rem;
   gap: 2rem;
   background-color: #f5fff1;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 400px;
+  position: relative;
+  z-index: 1;
+  overflow: visible;
 }
 
 .hero-left img {
@@ -493,6 +516,9 @@ body {
   padding: 3rem 2rem;
   background-color: #fff;
   text-align: center;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .features h2 {
@@ -541,6 +567,9 @@ body {
   color: white;
   padding: 2rem;
   text-align: center;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .footer-top {
