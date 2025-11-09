@@ -62,7 +62,6 @@ function NutritionTracker({ user }) {
 
     setIsSearching(true)
     setHasSearched(true)
-    setHasSearched(true)
     setError('')
     
     try {
