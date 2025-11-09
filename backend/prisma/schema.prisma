@@ -1,0 +1,112 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  meals         Meal[]
+  dailyGoals    DailyGoal?
+  loggedMeals   LoggedMeal[]
+  plannedMeals  PlannedMeal[]
+  customFoods   CustomFood[]
+  
+  @@map("users")
+}
+
+model Meal {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  name         String
+  calories     Float
+  protein      Float
+  carbs        Float
+  fat          Float
+  plannedDate  DateTime? @map("planned_date")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("meals")
+}
+
+model DailyGoal {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  calories  Float
+  protein   Float
+  carbs     Float
+  fat       Float
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("daily_goals")
+}
+
+model LoggedMeal {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  name         String
+  calories     Float
+  protein      Float
+  carbs        Float
+  fat          Float
+  quantity     Float    @default(100) // Current serving size in grams
+  baseQuantity Float    @default(100) @map("base_quantity") // Original reference serving size
+  mealDate     DateTime @map("meal_date") @db.Date
+  loggedAt     DateTime @default(now()) @map("logged_at")
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, mealDate])
+  @@map("logged_meals")
+}
+
+model CustomFood {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  calories  Float
+  protein   Float
+  carbs     Float
+  fat       Float
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("custom_foods")
+}
+
+model PlannedMeal {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  name         String
+  calories     Float?
+  protein      Float?
+  carbs        Float?
+  fat          Float?
+  plannedDate  DateTime @map("planned_date") @db.Date
+  mealType     String   @map("meal_type")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, plannedDate])
+  @@map("planned_meals")
+}

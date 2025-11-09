@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { plannedMealsAPI } from '../services/api';
 import Navigation from '../components/Navigation';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/supabaseService';
+import { authService } from '../services/apiService';
 
 function MealPlanner({ user }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -38,12 +38,16 @@ function MealPlanner({ user }) {
         Snacks: { id: null, name: '', calories: '', notes: '' },
       };
       data.forEach(meal => {
-        newMealsState[meal.meal_type] = {
-          id: meal.id,
-          name: meal.name,
-          calories: meal.calories,
-          notes: meal.notes || '',
-        };
+        // Handle both camelCase and snake_case
+        const mealType = meal.mealType || meal.meal_type;
+        if (newMealsState[mealType]) {
+          newMealsState[mealType] = {
+            id: meal.id,
+            name: meal.name,
+            calories: meal.calories || '',
+            notes: meal.notes || '',
+          };
+        }
       });
       setMeals(newMealsState);
     }
@@ -247,4 +251,4 @@ function MealPlanner({ user }) {
   );
 }
 
-export default MealPlanner; 
+export default MealPlanner;

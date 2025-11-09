@@ -1,20 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateUser, createUserClient } = require('../middleware/auth');
+const { authenticateUser } = require('../middleware/auth');
+const prisma = require('../lib/prisma');
 
 // Get all meals
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const { data, error } = await supabase
-      .from('meals')
-      .select('*')
-      .eq('user_id', req.user.id)
-      .order('planned_date', { ascending: true });
-    if (error) return res.status(400).json({ error: error.message });
-    res.json({ data, success: true });
+    const meals = await prisma.meal.findMany({
+      where: { userId: req.user.id },
+      orderBy: { plannedDate: 'asc' }
+    });
+    
+    res.json({ data: meals, success: true });
   } catch (error) {
+    console.error('Get meals error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -22,21 +21,27 @@ router.get('/', authenticateUser, async (req, res) => {
 // Create new meal
 router.post('/', authenticateUser, async (req, res) => {
   try {
-    const { name, calories, protein, carbs, fat } = req.body;
-    if (!name || !calories || !protein || !carbs || !fat) {
+    const { name, calories, protein, carbs, fat, plannedDate } = req.body;
+    
+    if (!name || calories === undefined || protein === undefined || carbs === undefined || fat === undefined) {
       return res.status(400).json({ error: 'All fields are required' });
     }
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const meal = { ...req.body, user_id: req.user.id };
-    const { data, error } = await supabase
-      .from('meals')
-      .insert(meal)
-      .select()
-      .single();
-    if (error) return res.status(400).json({ error: error.message });
-    res.status(201).json({ data, success: true, message: 'Meal created!' });
+
+    const meal = await prisma.meal.create({
+      data: {
+        userId: req.user.id,
+        name,
+        calories: parseFloat(calories),
+        protein: parseFloat(protein),
+        carbs: parseFloat(carbs),
+        fat: parseFloat(fat),
+        plannedDate: plannedDate ? new Date(plannedDate) : null
+      }
+    });
+
+    res.status(201).json({ data: meal, success: true, message: 'Meal created!' });
   } catch (error) {
+    console.error('Create meal error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -44,24 +49,37 @@ router.post('/', authenticateUser, async (req, res) => {
 // Update meal
 router.put('/:id', authenticateUser, async (req, res) => {
   try {
-    const mealId = req.params.id;
-    const { name, calories, protein, carbs, fat } = req.body;
-    if (!name || !calories || !protein || !carbs || !fat) {
+    const { id } = req.params;
+    const { name, calories, protein, carbs, fat, plannedDate } = req.body;
+    
+    if (!name || calories === undefined || protein === undefined || carbs === undefined || fat === undefined) {
       return res.status(400).json({ error: 'All fields are required' });
     }
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const { data, error } = await supabase
-      .from('meals')
-      .update(req.body)
-      .eq('id', mealId)
-      .eq('user_id', req.user.id)
-      .select()
-      .single();
-    if (error) return res.status(400).json({ error: error.message });
-    if (!data) return res.status(404).json({ error: 'Meal not found' });
-    res.json({ data, success: true, message: 'Meal updated!' });
+
+    // Check if meal exists and belongs to user
+    const existingMeal = await prisma.meal.findFirst({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!existingMeal) {
+      return res.status(404).json({ error: 'Meal not found' });
+    }
+
+    const meal = await prisma.meal.update({
+      where: { id },
+      data: {
+        name,
+        calories: parseFloat(calories),
+        protein: parseFloat(protein),
+        carbs: parseFloat(carbs),
+        fat: parseFloat(fat),
+        plannedDate: plannedDate ? new Date(plannedDate) : null
+      }
+    });
+
+    res.json({ data: meal, success: true, message: 'Meal updated!' });
   } catch (error) {
+    console.error('Update meal error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -69,17 +87,24 @@ router.put('/:id', authenticateUser, async (req, res) => {
 // Delete meal
 router.delete('/:id', authenticateUser, async (req, res) => {
   try {
-    const mealId = req.params.id;
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const { error } = await supabase
-      .from('meals')
-      .delete()
-      .eq('id', mealId)
-      .eq('user_id', req.user.id);
-    if (error) return res.status(400).json({ error: error.message });
+    const { id } = req.params;
+
+    // Check if meal exists and belongs to user
+    const existingMeal = await prisma.meal.findFirst({
+      where: { id, userId: req.user.id }
+    });
+
+    if (!existingMeal) {
+      return res.status(404).json({ error: 'Meal not found' });
+    }
+
+    await prisma.meal.delete({
+      where: { id }
+    });
+
     res.json({ success: true, message: 'Meal deleted!' });
   } catch (error) {
+    console.error('Delete meal error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
