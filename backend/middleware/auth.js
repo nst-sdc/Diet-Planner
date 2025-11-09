@@ -1,12 +1,9 @@
-const { createClient } = require('@supabase/supabase-js');
+const jwt = require('jsonwebtoken');
+const prisma = require('../lib/prisma');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Middleware to authenticate user from Supabase token
-// Add user object to req.user if authentication is successful
+// Middleware to authenticate user from JWT token
 async function authenticateUser(req, res, next) {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -17,9 +14,14 @@ async function authenticateUser(req, res, next) {
       });
     }
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const decoded = jwt.verify(token, JWT_SECRET);
     
-    if (error || !user) {
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, createdAt: true }
+    });
+    
+    if (!user) {
       return res.status(401).json({ 
         error: 'Invalid or expired token' 
       });
@@ -29,29 +31,18 @@ async function authenticateUser(req, res, next) {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(500).json({ 
+    res.status(401).json({ 
       error: 'Authentication failed' 
     });
   }
 }
 
-//Create a Supabase client with user's JWT token
-function createUserClient(token) {
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY,
-    { 
-      global: { 
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        } 
-      } 
-    }
-  );
+// Generate JWT token
+function generateToken(userId) {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
 }
 
 module.exports = {
   authenticateUser,
-  createUserClient,
-  supabase
+  generateToken
 };

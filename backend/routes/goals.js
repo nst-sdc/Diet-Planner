@@ -1,49 +1,50 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateUser, createUserClient } = require('../middleware/auth');
+const { authenticateUser } = require('../middleware/auth');
+const prisma = require('../lib/prisma');
 
 // Get user goals
 router.get('/', authenticateUser, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const { data, error } = await supabase
-      .from('daily_goals')
-      .select('*')
-      .eq('user_id', req.user.id)
-      .maybeSingle();
-    if (error) return res.status(400).json({ error: error.message });
-    res.json({ data, success: true });
+    const goal = await prisma.dailyGoal.findUnique({
+      where: { userId: req.user.id }
+    });
+    
+    res.json({ data: goal, success: true });
   } catch (error) {
+    console.error('Get goals error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Save goals
+// Save goals (create or update)
 router.post('/', authenticateUser, async (req, res) => {
   try {
-    // Provide defaults for all required fields
     const calories = req.body.calories ?? 2000;
     const protein = req.body.protein ?? 100;
     const carbs = req.body.carbs ?? 250;
     const fat = req.body.fat ?? 67;
-    
-    if (!calories && !protein && !carbs && !fat) {
-      return res.status(400).json({ error: 'At least one field is required' });
-    }
-    
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const goal = { user_id: req.user.id, calories, protein, carbs, fat };
-    
-    const { data, error } = await supabase
-      .from('daily_goals')
-      .upsert(goal, { onConflict: 'user_id' })
-      .select()
-      .single();
-    if (error) return res.status(400).json({ error: error.message });
-    res.json({ data, success: true, message: 'Goals saved!' });
+
+    const goal = await prisma.dailyGoal.upsert({
+      where: { userId: req.user.id },
+      update: {
+        calories: parseFloat(calories),
+        protein: parseFloat(protein),
+        carbs: parseFloat(carbs),
+        fat: parseFloat(fat)
+      },
+      create: {
+        userId: req.user.id,
+        calories: parseFloat(calories),
+        protein: parseFloat(protein),
+        carbs: parseFloat(carbs),
+        fat: parseFloat(fat)
+      }
+    });
+
+    res.json({ data: goal, success: true, message: 'Goals saved!' });
   } catch (error) {
+    console.error('Save goals error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -51,15 +52,13 @@ router.post('/', authenticateUser, async (req, res) => {
 // Delete goals
 router.delete('/', authenticateUser, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    const supabase = createUserClient(token);
-    const { error } = await supabase
-      .from('daily_goals')
-      .delete()
-      .eq('user_id', req.user.id);
-    if (error) return res.status(400).json({ error: error.message });
+    await prisma.dailyGoal.deleteMany({
+      where: { userId: req.user.id }
+    });
+
     res.json({ success: true, message: 'Goals deleted!' });
   } catch (error) {
+    console.error('Delete goals error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

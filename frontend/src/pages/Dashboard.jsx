@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { goalsAPI, loggedMealsAPI, plannedMealsAPI } from '../services/api';
 import ProgressBar from '../components/ProgressBar';
 import Navigation from '../components/Navigation';
-import { authService } from '../services/supabaseService';
+import { authService } from '../services/apiService';
 
 function Dashboard({ user }) {
   const [goals, setGoals] = useState({ calories: 2000 });
@@ -73,13 +73,17 @@ function Dashboard({ user }) {
           setTodaysCalories(0);
         }
 
-        // Build weekly history (simple for-loop, no ISO)
+        // Build weekly history - handle both camelCase and snake_case
         if (loggedHistoryRes.data) {
           let historyByDate = {};
           loggedHistoryRes.data.forEach(meal => {
-            let date = meal.meal_date.split('T')[0];
-            if (!historyByDate[date]) historyByDate[date] = 0;
-            historyByDate[date] += meal.calories || 0;
+            // Handle both mealDate (camelCase) and meal_date (snake_case)
+            let dateStr = meal.mealDate || meal.meal_date;
+            if (dateStr) {
+              let date = dateStr.split('T')[0];
+              if (!historyByDate[date]) historyByDate[date] = 0;
+              historyByDate[date] += meal.calories || 0;
+            }
           });
           let formattedHistory = [];
           for (let i = 6; i >= 0; i--) {
@@ -96,6 +100,7 @@ function Dashboard({ user }) {
           setWeeklyHistory(formattedHistory);
         }
       } catch (error) {
+        console.error('Dashboard fetch error:', error);
         setGoalError('Failed to load dashboard data.');
       }
       setIsLoading(false);
@@ -169,8 +174,8 @@ function Dashboard({ user }) {
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {todaysPlannedMeals.map(meal => (
                 <li key={meal.id} className="nutrition-item">
-                  <span>{meal.name} ({meal.meal_type})</span>
-                  <span style={{ color: '#6b7280' }}>{meal.calories} kcal</span>
+                  <span>{meal.name} ({meal.mealType || meal.meal_type})</span>
+                  <span style={{ color: '#6b7280' }}>{meal.calories || 0} kcal</span>
                 </li>
               ))}
             </ul>
@@ -211,4 +216,4 @@ function Dashboard({ user }) {
   );
 }
 
-export default Dashboard; 
+export default Dashboard;

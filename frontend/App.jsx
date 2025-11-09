@@ -7,7 +7,7 @@ import Dashboard from './src/pages/Dashboard';
 import NutritionTracker from './src/pages/NutritionTracker';
 import MealPlanner from './src/pages/MealPlanner';
 import Navigation from './src/components/Navigation';
-import { authService } from './src/services/supabaseService';
+import { authService } from './src/services/apiService';
 import './App.css';
 
 function ProtectedRoute({ user, children }) {
@@ -21,24 +21,15 @@ function ProtectedRoute({ user, children }) {
 }
 
 function App() {
-  const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in
+  const [user, setUser] = useState(undefined);
 
   useEffect(() => {
     let mounted = true;
     authService.getCurrentUser().then(({ user }) => {
       if (mounted) setUser(user);
     });
-    // Listen to auth changes
-    const { data: listener } = authService.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        setUser(session?.user || null);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
     return () => {
       mounted = false;
-      if (listener && listener.subscription) listener.subscription.unsubscribe();
     };
   }, []);
 
@@ -64,11 +55,10 @@ function App() {
               <MealPlanner user={user} />
             </ProtectedRoute>
           } />
-          {/* Add other routes as needed */}
         </Routes>
       </div>
     </Router>
   );
 }
 
-export default App; 
+export default App;

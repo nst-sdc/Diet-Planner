@@ -1,14 +1,26 @@
-const API_BASE_URL = 'http://localhost:5050/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050/api';
+
+// Helper to get auth token
+const getAuthToken = () => {
+  return localStorage.getItem('auth_token');
+};
 
 async function apiCall(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
+  const token = getAuthToken();
+  
   const config = {
     ...options,
     headers: {
-      ...options.headers,
       'Content-Type': 'application/json',
+      ...options.headers,
     },
   };
+
+  // Add auth token if available and not already set
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
   if (config.body && typeof config.body !== 'string') {
     config.body = JSON.stringify(config.body);
@@ -21,13 +33,13 @@ async function apiCall(endpoint, options = {}) {
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error || 'API request failed');
+      return { data: null, error: { message: data.error || 'API request failed' } };
     }
     
-    return data;
+    return { data: data.data || data, error: null };
   } catch (error) {
     console.error('API Error:', error);
-    throw error;
+    return { data: null, error: { message: error.message || 'Network error' } };
   }
 }
 
@@ -44,9 +56,7 @@ export const mealsAPI = {
   // Get all meals for a user
   getMeals: async (token) => {
     return apiCall('/meals', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
 
@@ -54,10 +64,8 @@ export const mealsAPI = {
   addMeal: async (mealData, token) => {
     return apiCall('/meals', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(mealData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
     });
   },
 
@@ -65,10 +73,8 @@ export const mealsAPI = {
   updateMeal: async (mealId, mealData, token) => {
     return apiCall(`/meals/${mealId}`, {
       method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(mealData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
     });
   },
 
@@ -76,9 +82,7 @@ export const mealsAPI = {
   deleteMeal: async (mealId, token) => {
     return apiCall(`/meals/${mealId}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
 };
@@ -89,15 +93,15 @@ export const authAPI = {
   login: async (credentials) => {
     return apiCall('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(credentials),
+      body: credentials,
     });
   },
 
   // Register user
   register: async (userData) => {
-    return apiCall('/auth/register', {
+    return apiCall('/auth/signup', {
       method: 'POST',
-      body: JSON.stringify(userData),
+      body: userData,
     });
   },
 };
@@ -106,20 +110,20 @@ export const authAPI = {
 export const goalsAPI = {
   getGoals: async (token) => {
     return apiCall('/goals', {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
   setGoals: async (goalData, token) => {
     return apiCall('/goals', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(goalData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: goalData,
     });
   },
   deleteGoals: async (token) => {
     return apiCall('/goals', {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
 };
@@ -128,25 +132,39 @@ export const goalsAPI = {
 export const loggedMealsAPI = {
   getLoggedMeals: async (date, token) => {
     return apiCall(`/logged-meals?date=${encodeURIComponent(date)}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
   addLoggedMeal: async (mealData, token) => {
     return apiCall('/logged-meals', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(mealData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
+    });
+  },
+  addManualMeal: async (mealData, token) => {
+    return apiCall('/logged-meals/manual', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
+    });
+  },
+  updateMealQuantity: async (mealId, quantity, token) => {
+    return apiCall(`/logged-meals/${mealId}/quantity`, {
+      method: 'PATCH',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: { quantity },
     });
   },
   deleteLoggedMeal: async (mealId, token) => {
     return apiCall(`/logged-meals/${mealId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
   getLoggedMealsRange: async (start, end, token) => {
     return apiCall(`/logged-meals/range?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
 };
@@ -155,27 +173,27 @@ export const loggedMealsAPI = {
 export const plannedMealsAPI = {
   getPlannedMeals: async (date, token) => {
     return apiCall(`/planned-meals?date=${encodeURIComponent(date)}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
   addPlannedMeal: async (mealData, token) => {
     return apiCall('/planned-meals', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(mealData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
     });
   },
   updatePlannedMeal: async (mealId, mealData, token) => {
     return apiCall(`/planned-meals/${mealId}`, {
       method: 'PUT',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(mealData),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: mealData,
     });
   },
   deletePlannedMeal: async (mealId, token) => {
     return apiCall(`/planned-meals/${mealId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
   },
 };
@@ -187,4 +205,4 @@ export default {
   goals: goalsAPI,
   loggedMeals: loggedMealsAPI,
   plannedMeals: plannedMealsAPI,
-}; 
+};

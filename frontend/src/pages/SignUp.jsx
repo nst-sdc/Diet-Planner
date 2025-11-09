@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../services/supabaseService';
+import { authService } from '../services/apiService';
 
 function SignUp() {
-  // State for form fields and error
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,7 +11,6 @@ function SignUp() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -26,13 +24,12 @@ function SignUp() {
     }
     setLoading(true);
     try {
-      // Call signup from authService
       const { data, error } = await authService.signUp(email, password, fullName);
       if (error) {
         setError(error.message || 'Signup failed.');
-      } else {
-        setError('Check your email for confirmation link!');
-        setTimeout(() => navigate('/signin'), 2000);
+      } else if (data?.user) {
+        // Force a page reload to ensure App.jsx picks up the new user
+        window.location.href = '/dashboard';
       }
     } catch (err) {
       setError('Something went wrong.');
@@ -65,4 +62,4 @@ function SignUp() {
   );
 }
 
-export default SignUp; 
+export default SignUp;
