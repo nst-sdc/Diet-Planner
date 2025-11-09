@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050/api';
+// Use relative path to leverage Vite proxy, or fallback to env var if set
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -49,16 +50,30 @@ export const authService = {
       // Clear any existing session first
       removeAuthToken();
       
+      console.log('Signup request:', { email, API_URL });
+      
       const response = await fetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName }),
+        body: JSON.stringify({ email, password }), // Only send email and password to backend
       });
 
-      const result = await response.json();
+      // Check if response is ok before parsing JSON
+      const contentType = response.headers.get('content-type');
+      let result;
+      
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        return { data: null, error: { message: 'Invalid server response' } };
+      }
+
+      console.log('Signup response:', { status: response.status, result });
 
       if (!response.ok) {
-        return { data: null, error: { message: result.error || 'Signup failed' } };
+        return { data: null, error: { message: result.error || result.message || 'Signup failed' } };
       }
 
       // Store token and user
@@ -69,7 +84,8 @@ export const authService = {
 
       return { data: { user: result.data.user }, error: null };
     } catch (err) {
-      return { data: null, error: { message: err.message || 'Network error' } };
+      console.error('Signup error:', err);
+      return { data: null, error: { message: err.message || 'Network error. Please check if the backend server is running.' } };
     }
   },
 

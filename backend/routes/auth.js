@@ -7,6 +7,8 @@ const { generateToken } = require('../middleware/auth');
 // Sign up user
 router.post('/signup', async (req, res) => {
   try {
+    console.log('Signup request received:', { email: req.body?.email, hasPassword: !!req.body?.password });
+    
     const { email, password } = req.body;
     
     if (!email || !password) {
@@ -45,14 +47,38 @@ router.post('/signup', async (req, res) => {
     // Generate token
     const token = generateToken(user.id);
 
+    console.log('User created successfully:', user.email);
+    
     res.status(201).json({ 
       data: { user, token },
       success: true, 
       message: 'User created!' 
     });
   } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Signup error details:', {
+      message: error.message,
+      code: error.code,
+      meta: error.meta,
+      stack: error.stack
+    });
+    
+    // Handle Prisma unique constraint violation (duplicate email)
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+    
+    // Handle database connection errors
+    if (error.code === 'P1001' || error.code === 'P1017') {
+      return res.status(500).json({ 
+        error: 'Database connection error',
+        message: 'Unable to connect to database. Please check your database configuration.'
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Server error',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
   }
 });
 
@@ -98,7 +124,10 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ 
+      error: 'Server error',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
   }
 });
 

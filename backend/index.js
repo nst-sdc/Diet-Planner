@@ -19,7 +19,12 @@ const plannedMealsRoutes = require('./routes/plannedMeals');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Health check route
@@ -57,7 +62,7 @@ app.use((error, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Diet Planner Backend server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/`);

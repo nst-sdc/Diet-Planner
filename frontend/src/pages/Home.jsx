@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 function Home() {
   return (
-    <div style={{ minHeight: '100vh', background: '#f5fff1' }}>
+    <div style={{ minHeight: '100vh', background: '#f5fff1', width: '100%', margin: 0, padding: 0 }}>
       <nav className="navbar">
         <div className="logo">🍃 Dietura</div>
         <ul className="nav-links">
