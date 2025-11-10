@@ -68,15 +68,17 @@ function Dashboard({ user }) {
 
         if (plannedMealsRes.data) {
           setTodaysPlannedMeals(plannedMealsRes.data);
+          const totalPlannedCalories = plannedMealsRes.data.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+          setTodaysCalories(totalPlannedCalories);
+        } else {
+          setTodaysPlannedMeals([]);
+          setTodaysCalories(0);
         }
 
         if (todaysLoggedMealsRes.data) {
           setTodaysLoggedMeals(todaysLoggedMealsRes.data);
-          const totalLoggedCalories = todaysLoggedMealsRes.data.reduce((sum, meal) => sum + (meal.calories || 0), 0);
-          setTodaysCalories(totalLoggedCalories);
         } else {
           setTodaysLoggedMeals([]);
-          setTodaysCalories(0);
         }
 
         // Build weekly history - handle both camelCase and snake_case

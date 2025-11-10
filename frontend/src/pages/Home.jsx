@@ -20,7 +20,7 @@ function Home() {
       </nav>
       <section className="hero">
         <div className="hero-left">
-          <img src="/images/hero-girl.png" alt="Hero Girl" />
+          <img src="./images/hero-girl.png" alt="Hero Girl" />
         </div>
         <div className="hero-right">
           <p className="subheading">Transform Your Health with</p>
