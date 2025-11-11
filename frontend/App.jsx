@@ -7,6 +7,7 @@ import Dashboard from './src/pages/Dashboard';
 import NutritionTracker from './src/pages/NutritionTracker';
 import MealPlanner from './src/pages/MealPlanner';
 import Navigation from './src/components/Navigation';
+import SplashScreen from './src/components/SplashScreen';
 import { authService } from './src/services/apiService';
 import './App.css';
 
@@ -22,6 +23,7 @@ function ProtectedRoute({ user, children }) {
 
 function App() {
   const [user, setUser] = useState(undefined);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -33,31 +35,40 @@ function App() {
     };
   }, []);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute user={user}>
-              <Dashboard user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/nutrition-tracker" element={
-            <ProtectedRoute user={user}>
-              <NutritionTracker user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/meal-planner" element={
-            <ProtectedRoute user={user}>
-              <MealPlanner user={user} />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </div>
-    </Router>
+    <>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      {!showSplash && (
+        <Router>
+          <div className="App">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute user={user}>
+                  <Dashboard user={user} />
+                </ProtectedRoute>
+              } />
+              <Route path="/nutrition-tracker" element={
+                <ProtectedRoute user={user}>
+                  <NutritionTracker user={user} />
+                </ProtectedRoute>
+              } />
+              <Route path="/meal-planner" element={
+                <ProtectedRoute user={user}>
+                  <MealPlanner user={user} />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </div>
+        </Router>
+      )}
+    </>
   );
 }
 
