@@ -7,4 +7,4 @@ package-lock.json
 **/package-lock.json
 backend/prisma/dev.db
 *.db
-*.db-journal 
+*.db-journal .env.bak
