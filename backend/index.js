@@ -6,6 +6,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const { PrismaClient } = require('@prisma/client'); // ✅ add this line
 
 // Import route modules
 const authRoutes = require('./routes/auth');
@@ -17,6 +18,7 @@ const plannedMealsRoutes = require('./routes/plannedMeals');
 
 // Initialize Express app
 const app = express();
+const prisma = new PrismaClient(); // ✅ initialize Prisma
 
 // Middleware
 app.use(cors({
@@ -34,6 +36,17 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'healthy'
   });
+});
+
+// ✅ Add this DB connection test route
+app.get('/api/dbtest', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ success: true, message: '✅ Database connection successful!' });
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // API Routes
@@ -67,4 +80,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Diet Planner Backend server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/`);
   console.log(`🔗 API base URL: http://localhost:${PORT}/api/`);
-}); 
+});
